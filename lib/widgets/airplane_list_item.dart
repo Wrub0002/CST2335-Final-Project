@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/airplane.dart';
 
+/// A widget that displays a single airplane item in a list.
 class AirplaneListItem extends StatelessWidget {
   final Airplane airplane;
   final VoidCallback onTap;

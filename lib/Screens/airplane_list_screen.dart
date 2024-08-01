@@ -4,6 +4,7 @@ import '../widgets/airplane_list_item.dart';
 import 'add_airplane_screen.dart';
 import 'airplane_detail_screen.dart';
 
+/// A screen that displays a list of airplanes and allows the user to add, view details, and delete airplanes.
 class AirplaneListScreen extends StatefulWidget {
   @override
   _AirplaneListScreenState createState() => _AirplaneListScreenState();

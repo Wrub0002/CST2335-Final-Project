@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/airplane.dart';
 
+/// A screen that allows users to add a new airplane to the list.
 class AddAirplaneScreen extends StatefulWidget {
   final Function(Airplane) onAddAirplane;
 

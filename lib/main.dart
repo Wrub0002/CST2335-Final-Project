@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/airplane_list_screen.dart';
 
+/// The entry point of the Airplane Manager application.
 void main() {
   runApp(AirplaneApp());
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/airplane.dart';
 
+/// A screen that displays the details of a specific airplane.
 class AirplaneDetailScreen extends StatelessWidget {
   final Airplane airplane;
 
