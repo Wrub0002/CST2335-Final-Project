@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'flight_entity.dart';
 import 'flight_list_dao.dart';
+import 'package:intl/intl.dart';
 
 class FlightListPage extends StatefulWidget {
   final FlightDao flightDao;
 
-  FlightListPage({required this.flightDao});
+  FlightListPage({Key? key, required this.flightDao}) : super(key: key);
 
   @override
   _FlightListPageState createState() => _FlightListPageState();
@@ -15,15 +15,10 @@ class FlightListPage extends StatefulWidget {
 class _FlightListPageState extends State<FlightListPage> {
   final TextEditingController _departureCityController = TextEditingController();
   final TextEditingController _arrivalCityController = TextEditingController();
-  DateTime? _departureDate;
-  DateTime? _arrivalDate;
-
-  String? _departureCityError;
-  String? _arrivalCityError;
-  String? _departureDateError;
-  String? _arrivalDateError;
-
-  List<FlightEntity> _flights = [];
+  final TextEditingController _departureDateController = TextEditingController();
+  final TextEditingController _arrivalDateController = TextEditingController();
+  DateTime? _selectedDepartureDate;
+  DateTime? _selectedArrivalDate;
 
   @override
   void initState() {
@@ -31,160 +26,98 @@ class _FlightListPageState extends State<FlightListPage> {
     _loadFlights();
   }
 
-  Future<void> _loadFlights() async {
-    final flights = await widget.flightDao.findAllFlights();
-    setState(() {
-      _flights = flights;
-    });
-  }
-
-  bool _validateFields() {
-    bool isValid = true;
-
-    setState(() {
-      if (_departureCityController.text.isEmpty) {
-        _departureCityError = 'Please enter the departure city';
-        isValid = false;
-      } else {
-        _departureCityError = null;
-      }
-
-      if (_arrivalCityController.text.isEmpty) {
-        _arrivalCityError = 'Please enter the arrival city';
-        isValid = false;
-      } else {
-        _arrivalCityError = null;
-      }
-
-      if (_departureDate == null) {
-        _departureDateError = 'Please select the departure date';
-        isValid = false;
-      } else {
-        _departureDateError = null;
-      }
-
-      if (_arrivalDate == null) {
-        _arrivalDateError = 'Please select the arrival date';
-        isValid = false;
-      } else {
-        _arrivalDateError = null;
-      }
-    });
-
-    return isValid;
-  }
-
-  Future<void> _selectDate(DateTime? currentDate, Function(DateTime) onDateSelected) async {
-    DateTime initialDate = currentDate ?? DateTime.now();
-    DateTime? pickedDate = await showDatePicker(
+  Future<void> _selectDate(BuildContext context, bool isDeparture) async {
+    final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: initialDate,
+      initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (pickedDate != null) {
-      onDateSelected(pickedDate);
+    if (picked != null) {
+      setState(() {
+        if (isDeparture) {
+          _selectedDepartureDate = picked;
+          _departureDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+        } else {
+          _selectedArrivalDate = picked;
+          _arrivalDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+        }
+      });
     }
   }
 
-  Future<void> _showFlightDialog(FlightEntity flight) async {
-    TextEditingController _editDepartureCityController = TextEditingController(text: flight.departureCity);
-    TextEditingController _editArrivalCityController = TextEditingController(text: flight.arrivalCity);
-    DateTime? _editDepartureDate = flight.departureDateTime;
-    DateTime? _editArrivalDate = flight.arrivalDateTime;
+  Future<void> _addFlight() async {
+    final String departureCity = _departureCityController.text;
+    final String arrivalCity = _arrivalCityController.text;
 
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Flight Details'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _editDepartureCityController,
-                decoration: InputDecoration(labelText: 'Departure City'),
-              ),
-              TextField(
-                controller: _editArrivalCityController,
-                decoration: InputDecoration(labelText: 'Arrival City'),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _selectDate(_editDepartureDate, (date) {
-                        setState(() {
-                          _editDepartureDate = date;
-                        });
-                      }),
-                      child: AbsorbPointer(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            labelText: 'Departure Date',
-                            hintText: DateFormat('yyyy-MM-dd').format(_editDepartureDate!),
-                            suffixIcon: Icon(Icons.calendar_today),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _selectDate(_editArrivalDate, (date) {
-                        setState(() {
-                          _editArrivalDate = date;
-                        });
-                      }),
-                      child: AbsorbPointer(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            labelText: 'Arrival Date',
-                            hintText: DateFormat('yyyy-MM-dd').format(_editArrivalDate!),
-                            suffixIcon: Icon(Icons.calendar_today),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+    if (departureCity.isEmpty || arrivalCity.isEmpty || _selectedDepartureDate == null || _selectedArrivalDate == null) {
+      // Show an error message if any field is empty
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Error'),
+          content: Text('Please fill all fields'),
           actions: [
             TextButton(
-              onPressed: () async {
-                flight.departureCity = _editDepartureCityController.text;
-                flight.arrivalCity = _editArrivalCityController.text;
-                flight.departureTime = _editDepartureDate!.millisecondsSinceEpoch;
-                flight.arrivalTime = _editArrivalDate!.millisecondsSinceEpoch;
-                await widget.flightDao.updateFlight(flight);
-                _loadFlights();
-                Navigator.pop(context);
-              },
-              child: Text('Update'),
-            ),
-            TextButton(
-              onPressed: () async {
-                await widget.flightDao.deleteFlight(flight);
-                _loadFlights();
-                Navigator.pop(context);
-              },
-              child: Text('Delete'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
             ),
           ],
-        );
-      },
+        ),
+      );
+      return;
+    }
+
+    final int departureTime = _selectedDepartureDate!.millisecondsSinceEpoch;
+    final int arrivalTime = _selectedArrivalDate!.millisecondsSinceEpoch;
+
+    final flight = FlightEntity(
+      null, // Assuming `id` is auto-incremented
+      departureCity,
+      arrivalCity,
+      departureTime,
+      arrivalTime,
+    );
+
+    await widget.flightDao.insertFlight(flight);
+
+    // Clear the input fields
+    _departureCityController.clear();
+    _arrivalCityController.clear();
+    _departureDateController.clear();
+    _arrivalDateController.clear();
+    setState(() {
+      _selectedDepartureDate = null;
+      _selectedArrivalDate = null;
+    });
+
+    // Refresh the list of flights
+    _loadFlights();
+  }
+
+  Future<void> _loadFlights() async {
+    setState(() {});
+  }
+
+  void _showFlightDetails(FlightEntity flight) {
+    // Implement the logic to navigate to the flight details page
+    // This could involve opening a new screen showing the details of the selected flight.
+    // For demonstration, we'll just show a simple dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Flight Details'),
+        content: Text(
+            'Departure: ${flight.departureCity} -> Arrival: ${flight.arrivalCity}\n'
+                'Departure Time: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.departureTime))}\n'
+                'Arrival Time: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.arrivalTime))}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -192,107 +125,97 @@ class _FlightListPageState extends State<FlightListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flight List Page'),
+        title: Text('Flight List'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            TextField(
-              controller: _departureCityController,
-              decoration: InputDecoration(
-                labelText: 'Departure City',
-                errorText: _departureCityError,
-              ),
-            ),
-            TextField(
-              controller: _arrivalCityController,
-              decoration: InputDecoration(
-                labelText: 'Arrival City',
-                errorText: _arrivalCityError,
-              ),
-            ),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _selectDate(_departureDate, (date) {
-                      setState(() {
-                        _departureDate = date;
-                        _departureDateError = null;
-                      });
-                    }),
-                    child: AbsorbPointer(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Departure Date',
-                          errorText: _departureDateError,
-                          hintText: _departureDate == null ? '' : DateFormat('yyyy-MM-dd').format(_departureDate!),
-                          suffixIcon: Icon(Icons.calendar_today),
-                        ),
-                      ),
-                    ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _departureCityController,
+                  decoration: InputDecoration(
+                    labelText: 'Departure City',
                   ),
                 ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _selectDate(_arrivalDate, (date) {
-                      setState(() {
-                        _arrivalDate = date;
-                        _arrivalDateError = null;
-                      });
-                    }),
-                    child: AbsorbPointer(
+                SizedBox(height: 16),
+                TextField(
+                  controller: _arrivalCityController,
+                  decoration: InputDecoration(
+                    labelText: 'Arrival City',
+                  ),
+                ),
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
                       child: TextField(
+                        controller: _departureDateController,
                         decoration: InputDecoration(
-                          labelText: 'Arrival Date',
-                          errorText: _arrivalDateError,
-                          hintText: _arrivalDate == null ? '' : DateFormat('yyyy-MM-dd').format(_arrivalDate!),
-                          suffixIcon: Icon(Icons.calendar_today),
+                          labelText: 'Departure Date',
+                          suffixIcon: IconButton(
+                            icon: Icon(Icons.calendar_today),
+                            onPressed: () => _selectDate(context, true),
+                          ),
                         ),
+                        readOnly: true,
+                        onTap: () => _selectDate(context, true),
                       ),
                     ),
-                  ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: TextField(
+                        controller: _arrivalDateController,
+                        decoration: InputDecoration(
+                          labelText: 'Arrival Date',
+                          suffixIcon: IconButton(
+                            icon: Icon(Icons.calendar_today),
+                            onPressed: () => _selectDate(context, false),
+                          ),
+                        ),
+                        readOnly: true,
+                        onTap: () => _selectDate(context, false),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _addFlight,
+                  child: Text('Add Flight'),
                 ),
               ],
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                if (_validateFields()) {
-                  FlightEntity flight = FlightEntity.create(
-                    _departureCityController.text,
-                    _arrivalCityController.text,
-                    _departureDate!,
-                    _arrivalDate!,
+          ),
+          Expanded(
+            child: FutureBuilder<List<FlightEntity>>(
+              future: widget.flightDao.findAllFlights(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No flights available'));
+                } else {
+                  final flights = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: flights.length,
+                    itemBuilder: (context, index) {
+                      final flight = flights[index];
+                      return ListTile(
+                        title: Text('${flight.departureCity} -> ${flight.arrivalCity}'),
+                        subtitle: Text('Departure: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.departureTime))}'),
+                        onTap: () => _showFlightDetails(flight),
+                      );
+                    },
                   );
-                  await widget.flightDao.insertFlight(flight);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Flight information saved')),
-                  );
-                  _loadFlights(); // Refresh the list
                 }
               },
-              child: Text('Submit'),
             ),
-            SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _flights.length,
-                itemBuilder: (context, index) {
-                  final flight = _flights[index];
-                  return ListTile(
-                    title: Text('${flight.departureCity} to ${flight.arrivalCity}'),
-                    subtitle: Text(
-                        'Departure: ${DateFormat('yyyy-MM-dd').format(flight.departureDateTime)}\nArrival: ${DateFormat('yyyy-MM-dd').format(flight.arrivalDateTime)}'),
-                    onTap: () => _showFlightDialog(flight),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
