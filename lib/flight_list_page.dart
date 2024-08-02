@@ -316,7 +316,7 @@ class _FlightListPageState extends State<FlightListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flight List'),
+        title: Text('B(rian) L(eo) T(anek) Flight List'),
       ),
       body: Column(
         children: [
