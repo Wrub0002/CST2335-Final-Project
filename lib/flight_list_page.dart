@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'flight_entity.dart';
 import 'flight_list_dao.dart';
-import 'package:intl/intl.dart';
+import 'encrypted_preferences.dart';
 
 class FlightListPage extends StatefulWidget {
   final FlightDao flightDao;
+  final EncryptedPreferences encryptedPrefs;
 
-  FlightListPage({Key? key, required this.flightDao}) : super(key: key);
+  FlightListPage({Key? key, required this.flightDao, required this.encryptedPrefs}) : super(key: key);
 
   @override
   _FlightListPageState createState() => _FlightListPageState();
@@ -24,6 +26,17 @@ class _FlightListPageState extends State<FlightListPage> {
   void initState() {
     super.initState();
     _loadFlights();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final departureCity = await widget.encryptedPrefs.getLastDepartureCity();
+    final arrivalCity = await widget.encryptedPrefs.getLastArrivalCity();
+
+    setState(() {
+      _departureCityController.text = departureCity ?? '';
+      _arrivalCityController.text = arrivalCity ?? '';
+    });
   }
 
   Future<void> _selectDate(BuildContext context, bool isDeparture) async {
@@ -51,18 +64,9 @@ class _FlightListPageState extends State<FlightListPage> {
     final String arrivalCity = _arrivalCityController.text;
 
     if (departureCity.isEmpty || arrivalCity.isEmpty || _selectedDepartureDate == null || _selectedArrivalDate == null) {
-      // Show an error message if any field is empty
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Error'),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
           content: Text('Please fill all fields'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK'),
-            ),
-          ],
         ),
       );
       return;
@@ -80,6 +84,10 @@ class _FlightListPageState extends State<FlightListPage> {
     );
 
     await widget.flightDao.insertFlight(flight);
+
+    // Save input to encrypted preferences
+    await widget.encryptedPrefs.saveLastDepartureCity(departureCity);
+    await widget.encryptedPrefs.saveLastArrivalCity(arrivalCity);
 
     // Clear the input fields
     _departureCityController.clear();
@@ -245,6 +253,65 @@ class _FlightListPageState extends State<FlightListPage> {
     );
   }
 
+  void _showAddFlightPopup() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Add New Flight'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _departureCityController,
+              decoration: InputDecoration(labelText: 'Departure City'),
+            ),
+            TextField(
+              controller: _arrivalCityController,
+              decoration: InputDecoration(labelText: 'Arrival City'),
+            ),
+            TextField(
+              controller: _departureDateController,
+              decoration: InputDecoration(
+                labelText: 'Departure Date',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.calendar_today),
+                  onPressed: () => _selectDate(context, true),
+                ),
+              ),
+              readOnly: true,
+              onTap: () => _selectDate(context, true),
+            ),
+            TextField(
+              controller: _arrivalDateController,
+              decoration: InputDecoration(
+                labelText: 'Arrival Date',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.calendar_today),
+                  onPressed: () => _selectDate(context, false),
+                ),
+              ),
+              readOnly: true,
+              onTap: () => _selectDate(context, false),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _addFlight();
+              Navigator.of(context).pop();
+            },
+            child: Text('Add Flight'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -253,90 +320,48 @@ class _FlightListPageState extends State<FlightListPage> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _departureCityController,
-                  decoration: InputDecoration(
-                    labelText: 'Departure City',
-                  ),
-                ),
-                SizedBox(height: 16),
-                TextField(
-                  controller: _arrivalCityController,
-                  decoration: InputDecoration(
-                    labelText: 'Arrival City',
-                  ),
-                ),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _departureDateController,
-                        decoration: InputDecoration(
-                          labelText: 'Departure Date',
-                          suffixIcon: IconButton(
-                            icon: Icon(Icons.calendar_today),
-                            onPressed: () => _selectDate(context, true),
-                          ),
-                        ),
-                        readOnly: true,
-                        onTap: () => _selectDate(context, true),
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: TextField(
-                        controller: _arrivalDateController,
-                        decoration: InputDecoration(
-                          labelText: 'Arrival Date',
-                          suffixIcon: IconButton(
-                            icon: Icon(Icons.calendar_today),
-                            onPressed: () => _selectDate(context, false),
-                          ),
-                        ),
-                        readOnly: true,
-                        onTap: () => _selectDate(context, false),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _addFlight,
-                  child: Text('Add Flight'),
-                ),
-              ],
-            ),
-          ),
           Expanded(
             child: FutureBuilder<List<FlightEntity>>(
               future: widget.flightDao.findAllFlights(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No flights available'));
-                } else {
-                  final flights = snapshot.data!;
-                  return ListView.builder(
-                    itemCount: flights.length,
-                    itemBuilder: (context, index) {
-                      final flight = flights[index];
-                      return ListTile(
-                        title: Text('${flight.departureCity} -> ${flight.arrivalCity}'),
-                        subtitle: Text('Departure: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.departureTime))}'),
-                        onTap: () => _showFlightDetails(flight),
-                      );
-                    },
-                  );
                 }
+
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                final flights = snapshot.data ?? [];
+
+                if (flights.isEmpty) {
+                  return Center(child: Text('No flights available.'));
+                }
+
+                return ListView.builder(
+                  itemCount: flights.length,
+                  itemBuilder: (context, index) {
+                    final flight = flights[index];
+                    return ListTile(
+                      title: Text('${flight.departureCity} -> ${flight.arrivalCity}'),
+                      subtitle: Text('Departure: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.departureTime))} - Arrival: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.arrivalTime))}'),
+                      onTap: () => _showFlightDetails(flight),
+                    );
+                  },
+                );
               },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton.icon(
+              onPressed: _showAddFlightPopup,
+              icon: Icon(Icons.airplanemode_active),
+              label: Text('New Flight?'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 60), // Make button larger
+                textStyle: TextStyle(fontSize: 18),
+              ),
             ),
           ),
         ],

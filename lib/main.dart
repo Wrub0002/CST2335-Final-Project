@@ -1,41 +1,46 @@
 import 'package:flutter/material.dart';
-import 'flight_list_dao.dart';
 import 'flight_list_page.dart';
+import 'flight_list_dao.dart';
 import 'flight_list_db.dart';
+import 'encrypted_preferences.dart'; // Import the EncryptedPreferences class
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize the database and obtain an instance of FlightDao
+
+  // Initialize the database
   final database = await $FloorFlightDatabase.databaseBuilder('flight_database.db').build();
   final flightDao = database.flightDao;
 
-  runApp(MyApp(flightDao: flightDao));
+  // Initialize encrypted preferences
+  final encryptedPrefs = EncryptedPreferences();
+
+  runApp(MyApp(flightDao: flightDao, encryptedPrefs: encryptedPrefs));
 }
 
 class MyApp extends StatelessWidget {
   final FlightDao flightDao;
+  final EncryptedPreferences encryptedPrefs;
 
-  // Modified constructor to accept FlightDao instance
-  const MyApp({super.key, required this.flightDao});
+  const MyApp({super.key, required this.flightDao, required this.encryptedPrefs});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flight Management',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MyHomePage(title: 'Place holder Main page', flightDao: flightDao),
+      home: MyHomePage(title: 'Flight Management', flightDao: flightDao, encryptedPrefs: encryptedPrefs),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   final FlightDao flightDao;
+  final EncryptedPreferences encryptedPrefs;
 
-  // Modified constructor to accept FlightDao instance
-  const MyHomePage({super.key, required this.title, required this.flightDao});
+  const MyHomePage({super.key, required this.title, required this.flightDao, required this.encryptedPrefs});
   final String title;
 
   @override
@@ -52,6 +57,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Column(
+          children: <Widget>[
+            // Your content here
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -65,8 +73,12 @@ class _MyHomePageState extends State<MyHomePage> {
   void _flightPage() {
     Navigator.push(
       context,
-      // Pass the FlightDao instance to FlightListPage
-      MaterialPageRoute(builder: (context) => FlightListPage(flightDao: widget.flightDao)),
+      MaterialPageRoute(
+        builder: (context) => FlightListPage(
+          flightDao: widget.flightDao,
+          encryptedPrefs: widget.encryptedPrefs,
+        ),
+      ),
     );
   }
 }
