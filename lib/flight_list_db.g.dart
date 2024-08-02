@@ -96,7 +96,7 @@ class _$FlightDatabase extends FlightDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `FlightEntity` (`departureCity` TEXT NOT NULL, `arrivalCity` TEXT NOT NULL, `departureTime` INTEGER NOT NULL, `arrivalTime` INTEGER NOT NULL, `id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `FlightEntity` (`id` INTEGER NOT NULL, `departureCity` TEXT NOT NULL, `arrivalCity` TEXT NOT NULL, `departureTime` INTEGER NOT NULL, `arrivalTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -119,11 +119,11 @@ class _$FlightDao extends FlightDao {
             database,
             'FlightEntity',
             (FlightEntity item) => <String, Object?>{
+                  'id': item.id,
                   'departureCity': item.departureCity,
                   'arrivalCity': item.arrivalCity,
                   'departureTime': item.departureTime,
-                  'arrivalTime': item.arrivalTime,
-                  'id': item.id
+                  'arrivalTime': item.arrivalTime
                 },
             changeListener),
         _flightEntityUpdateAdapter = UpdateAdapter(
@@ -131,11 +131,11 @@ class _$FlightDao extends FlightDao {
             'FlightEntity',
             ['id'],
             (FlightEntity item) => <String, Object?>{
+                  'id': item.id,
                   'departureCity': item.departureCity,
                   'arrivalCity': item.arrivalCity,
                   'departureTime': item.departureTime,
-                  'arrivalTime': item.arrivalTime,
-                  'id': item.id
+                  'arrivalTime': item.arrivalTime
                 },
             changeListener),
         _flightEntityDeletionAdapter = DeletionAdapter(
@@ -143,11 +143,11 @@ class _$FlightDao extends FlightDao {
             'FlightEntity',
             ['id'],
             (FlightEntity item) => <String, Object?>{
+                  'id': item.id,
                   'departureCity': item.departureCity,
                   'arrivalCity': item.arrivalCity,
                   'departureTime': item.departureTime,
-                  'arrivalTime': item.arrivalTime,
-                  'id': item.id
+                  'arrivalTime': item.arrivalTime
                 },
             changeListener);
 
