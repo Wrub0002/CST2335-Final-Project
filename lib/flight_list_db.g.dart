@@ -96,7 +96,7 @@ class _$FlightDatabase extends FlightDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `FlightEntity` (`id` INTEGER NOT NULL, `departureCity` TEXT NOT NULL, `arrivalCity` TEXT NOT NULL, `departureTime` INTEGER NOT NULL, `arrivalTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `FlightEntity` (`id` INTEGER, `departureCity` TEXT NOT NULL, `arrivalCity` TEXT NOT NULL, `departureTime` INTEGER NOT NULL, `arrivalTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -167,7 +167,7 @@ class _$FlightDao extends FlightDao {
   Future<List<FlightEntity>> findAllFlights() async {
     return _queryAdapter.queryList('SELECT * FROM FlightEntity',
         mapper: (Map<String, Object?> row) => FlightEntity(
-            row['id'] as int,
+            row['id'] as int?,
             row['departureCity'] as String,
             row['arrivalCity'] as String,
             row['departureTime'] as int,
@@ -178,7 +178,7 @@ class _$FlightDao extends FlightDao {
   Stream<FlightEntity?> findFlightById(int id) {
     return _queryAdapter.queryStream('SELECT * FROM FlightEntity WHERE id = ?1',
         mapper: (Map<String, Object?> row) => FlightEntity(
-            row['id'] as int,
+            row['id'] as int?,
             row['departureCity'] as String,
             row['arrivalCity'] as String,
             row['departureTime'] as int,

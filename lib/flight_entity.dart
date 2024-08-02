@@ -3,7 +3,7 @@ import 'package:floor/floor.dart';
 @entity
 class FlightEntity {
   @primaryKey
-  final int id;
+  final int? id; // Nullable so that Floor can auto-generate it
 
   late final String departureCity;
   late final String arrivalCity;
@@ -22,10 +22,9 @@ class FlightEntity {
       this.arrivalTime,
       );
 
-  // Factory constructor to create a new flight without managing ID
   factory FlightEntity.create(String departureCity, String arrivalCity, DateTime departureTime, DateTime arrivalTime) {
     return FlightEntity(
-      1,
+      null, // Let Floor handle ID assignment
       departureCity,
       arrivalCity,
       departureTime.millisecondsSinceEpoch,

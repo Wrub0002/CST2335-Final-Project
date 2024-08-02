@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'flight_entity.dart';
 import 'flight_list_dao.dart';
-import 'flight_list_db.dart';
 
 class FlightListPage extends StatefulWidget {
   final FlightDao flightDao;
 
-  // Modified constructor to accept FlightDao instance
   FlightListPage({required this.flightDao});
 
   @override
@@ -76,6 +74,19 @@ class _FlightListPageState extends State<FlightListPage> {
     return isValid;
   }
 
+  Future<void> _selectDate(DateTime? currentDate, Function(DateTime) onDateSelected) async {
+    DateTime initialDate = currentDate ?? DateTime.now();
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (pickedDate != null) {
+      onDateSelected(pickedDate);
+    }
+  }
+
   Future<void> _showFlightDialog(FlightEntity flight) async {
     TextEditingController _editDepartureCityController = TextEditingController(text: flight.departureCity);
     TextEditingController _editArrivalCityController = TextEditingController(text: flight.arrivalCity);
@@ -98,43 +109,49 @@ class _FlightListPageState extends State<FlightListPage> {
                 controller: _editArrivalCityController,
                 decoration: InputDecoration(labelText: 'Arrival City'),
               ),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Departure Date',
-                  hintText: DateFormat('yyyy-MM-dd').format(_editDepartureDate!),
-                ),
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: _editDepartureDate!,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
-                  );
-                  if (pickedDate != null) {
-                    setState(() {
-                      _editDepartureDate = pickedDate;
-                    });
-                  }
-                },
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _selectDate(_editDepartureDate, (date) {
+                        setState(() {
+                          _editDepartureDate = date;
+                        });
+                      }),
+                      child: AbsorbPointer(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            labelText: 'Departure Date',
+                            hintText: DateFormat('yyyy-MM-dd').format(_editDepartureDate!),
+                            suffixIcon: Icon(Icons.calendar_today),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Arrival Date',
-                  hintText: DateFormat('yyyy-MM-dd').format(_editArrivalDate!),
-                ),
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: _editArrivalDate!,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2101),
-                  );
-                  if (pickedDate != null) {
-                    setState(() {
-                      _editArrivalDate = pickedDate;
-                    });
-                  }
-                },
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _selectDate(_editArrivalDate, (date) {
+                        setState(() {
+                          _editArrivalDate = date;
+                        });
+                      }),
+                      child: AbsorbPointer(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            labelText: 'Arrival Date',
+                            hintText: DateFormat('yyyy-MM-dd').format(_editArrivalDate!),
+                            suffixIcon: Icon(Icons.calendar_today),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -199,26 +216,19 @@ class _FlightListPageState extends State<FlightListPage> {
               children: <Widget>[
                 Expanded(
                   child: GestureDetector(
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2101),
-                      );
-                      if (pickedDate != null) {
-                        setState(() {
-                          _departureDate = pickedDate;
-                          _departureDateError = null;
-                        });
-                      }
-                    },
+                    onTap: () => _selectDate(_departureDate, (date) {
+                      setState(() {
+                        _departureDate = date;
+                        _departureDateError = null;
+                      });
+                    }),
                     child: AbsorbPointer(
                       child: TextField(
                         decoration: InputDecoration(
                           labelText: 'Departure Date',
                           errorText: _departureDateError,
                           hintText: _departureDate == null ? '' : DateFormat('yyyy-MM-dd').format(_departureDate!),
+                          suffixIcon: Icon(Icons.calendar_today),
                         ),
                       ),
                     ),
@@ -227,26 +237,19 @@ class _FlightListPageState extends State<FlightListPage> {
                 SizedBox(width: 16),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2101),
-                      );
-                      if (pickedDate != null) {
-                        setState(() {
-                          _arrivalDate = pickedDate;
-                          _arrivalDateError = null;
-                        });
-                      }
-                    },
+                    onTap: () => _selectDate(_arrivalDate, (date) {
+                      setState(() {
+                        _arrivalDate = date;
+                        _arrivalDateError = null;
+                      });
+                    }),
                     child: AbsorbPointer(
                       child: TextField(
                         decoration: InputDecoration(
                           labelText: 'Arrival Date',
                           errorText: _arrivalDateError,
                           hintText: _arrivalDate == null ? '' : DateFormat('yyyy-MM-dd').format(_arrivalDate!),
+                          suffixIcon: Icon(Icons.calendar_today),
                         ),
                       ),
                     ),
@@ -264,7 +267,6 @@ class _FlightListPageState extends State<FlightListPage> {
                     _departureDate!,
                     _arrivalDate!,
                   );
-                  // Save the flight information using the provided FlightDao instance
                   await widget.flightDao.insertFlight(flight);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Flight information saved')),
