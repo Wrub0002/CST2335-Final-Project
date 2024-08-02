@@ -1,40 +1,55 @@
 import 'package:flutter/material.dart';
 import '../models/airplane.dart';
+import '../crud/airplane_database_service.dart';
 import '../widgets/airplane_list_item.dart';
 import 'add_airplane_screen.dart';
 import 'airplane_detail_screen.dart';
 
-/// A screen that displays a list of airplanes and allows users to add, update, or delete airplanes.
 class AirplaneListScreen extends StatefulWidget {
   @override
   _AirplaneListScreenState createState() => _AirplaneListScreenState();
 }
 
 class _AirplaneListScreenState extends State<AirplaneListScreen> {
-  final List<Airplane> airplanes = [];
+  late final AirplaneDatabase _database;
+  late final AirplaneDao _airplaneDao;
+  List<Airplane> airplanes = [];
 
-  /// Adds a new airplane to the list and updates the state.
-  void _addNewAirplane(Airplane airplane) {
+  @override
+  void initState() {
+    super.initState();
+    _initDatabase();
+  }
+
+  Future<void> _initDatabase() async {
+    _database = await $FloorAirplaneDatabase.databaseBuilder('airplane_database.db').build();
+    _airplaneDao = _database.airplaneDao;
+    _loadAirplanes();
+  }
+
+  Future<void> _loadAirplanes() async {
+    final loadedAirplanes = await _airplaneDao.findAllAirplanes();
+    setState(() {
+      airplanes = loadedAirplanes;
+    });
+  }
+
+  Future<void> _addNewAirplane(Airplane airplane) async {
+    await _airplaneDao.insertAirplane(airplane);
     setState(() {
       airplanes.add(airplane);
     });
   }
 
-  /// Updates an existing airplane in the list and updates the state.
-  void _updateAirplane(Airplane updatedAirplane) {
-    setState(() {
-      final index = airplanes.indexWhere((airplane) => airplane.type == updatedAirplane.type);
-      if (index != -1) {
-        airplanes[index] = updatedAirplane;
-      }
-    });
+  Future<void> _updateAirplane(Airplane updatedAirplane) async {
+    await _airplaneDao.updateAirplane(updatedAirplane);
+    _loadAirplanes();
   }
 
-  /// This method is called when an airplane is deleted via the [AirplaneDetailScreen].
-  /// It removes the airplane from the list based on its type.
-  void _deleteAirplane(Airplane airplane) {
+  Future<void> _deleteAirplane(Airplane airplane) async {
+    await _airplaneDao.deleteAirplane(airplane);
     setState(() {
-      airplanes.removeWhere((a) => a.type == airplane.type);
+      airplanes.removeWhere((a) => a.id == airplane.id);
     });
   }
 

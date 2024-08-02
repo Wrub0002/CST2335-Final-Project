@@ -1,14 +1,16 @@
-/// A class that represents an airplane with specific properties.
+import 'package:floor/floor.dart';
+
+@entity
 class Airplane {
+  @primaryKey
+  final int? id;
   final String type;
   final int numberOfPassengers;
   final int maxSpeed;
   final int range;
 
-  /// Creates an [Airplane] with the given properties.
-  ///
-  /// All parameters are required:
   Airplane({
+    required this.id,
     required this.type,
     required this.numberOfPassengers,
     required this.maxSpeed,
