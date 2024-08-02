@@ -5,19 +5,17 @@ import '../models/airplane.dart';
 class AirplaneListItem extends StatelessWidget {
   final Airplane airplane;
   final VoidCallback onTap;
-  final VoidCallback onLongPress;
 
+  /// Constructs an [AirplaneListItem] with the required [airplane] and [onTap] parameters.
   AirplaneListItem({
     required this.airplane,
     required this.onTap,
-    required this.onLongPress,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      onLongPress: onLongPress,
       child: Card(
         elevation: 2,
         margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),

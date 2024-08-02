@@ -6,6 +6,7 @@ void main() {
   runApp(AirplaneApp());
 }
 
+/// The root widget of the Airplane Manager application.
 class AirplaneApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
