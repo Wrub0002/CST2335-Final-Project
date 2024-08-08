@@ -1,21 +1,75 @@
 import 'package:flutter/material.dart';
-import 'screens/airplane_list_screen.dart';
+import 'package:floor/floor.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart' as sqflite;
+import 'localization/app_localizations.dart';  // Import localization
+import 'airplane/views/airplane_list_view.dart';
+import 'airplane/repositories/airplane_dao.dart';
+import 'airplane/repositories/airplane_repository.dart';
+import 'airplane/services/airplane_service.dart';
+import 'airplane/models/airplane_entity.dart';
+import 'airplane/repositories/database.dart';
 
-/// The entry point of the Airplane Manager application.
-void main() {
-  runApp(AirplaneApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the database
+  final database = await $FloorAppDatabase
+      .databaseBuilder('app_database.db')
+      .build();
+
+  // Initialize the DAO and repository
+  final airplaneDao = database.airplaneDao;
+  final airplaneRepository = AirplaneRepository(airplaneDao);
+
+  // Initialize the service
+  final airplaneService = AirplaneService(airplaneRepository);
+
+  runApp(MyApp(airplaneService: airplaneService));
 }
 
-/// The root widget of the Airplane Manager application.
-class AirplaneApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  final AirplaneService airplaneService;
+
+  MyApp({required this.airplaneService});
+
+  @override
+  _MyAppState createState() => _MyAppState();
+
+  static void setLocale(BuildContext context, Locale newLocale) async {
+    _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
+    state?.changeLanguage(newLocale);
+  }
+}
+
+class _MyAppState extends State<MyApp> {
+  Locale _locale = Locale('en');
+
+  void changeLanguage(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Airplane Manager',
+      locale: _locale,
+      supportedLocales: [
+        Locale('en', ''),
+        Locale('pt', ''),
+      ],
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      title: 'Airplane Management',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: AirplaneListScreen(),
+      home: AirplaneListView(airplaneService: widget.airplaneService),
     );
   }
 }

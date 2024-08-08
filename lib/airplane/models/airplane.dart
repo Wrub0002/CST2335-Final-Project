@@ -1,17 +1,17 @@
-/// A class that represents an airplane with specific properties.
 class Airplane {
+  final int id;
   final String type;
   final int numberOfPassengers;
-  final int maxSpeed;
-  final int range;
+  final double maxSpeed;
+  final double range;
 
-  /// Creates an [Airplane] with the given properties.
-  ///
-  /// All parameters are required:
   Airplane({
+    required this.id,
     required this.type,
     required this.numberOfPassengers,
     required this.maxSpeed,
     required this.range,
   });
+
+
 }
