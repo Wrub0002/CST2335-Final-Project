@@ -1,15 +1,15 @@
 import 'package:cst2335_final_project/AppLocalizations.dart';
 import 'package:flutter/material.dart';
+import 'airplane/services/airplane_service.dart';
+import 'airplane/initializers/app_initializer.dart';
+import 'airplane/layout/responsive_layout.dart';
 import 'package:cst2335_final_project/CustomerListPage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() {
-  runApp(const MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
 
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -28,31 +28,30 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
 
+  // Initialize the airplane service using the AppInitializer class
+  final airplaneService = await AppInitializer.initializeAirplaneService();
+
+
+  runApp(MyApp(airplaneService: airplaneService));
   final String title;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class MyApp extends StatelessWidget {
+  final AirplaneService airplaneService;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  MyApp({required this.airplaneService});
 
   @override
   Widget build(BuildContext context) {
+
+    return MaterialApp(
+      title: 'Airplane Management',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
 
     return Scaffold(
       appBar: AppBar(
@@ -77,11 +76,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      debugShowCheckedModeBanner: false, // Add this line to remove the DEBUG banner
+      home: ResponsiveLayout(airplaneService: airplaneService),
     );
   }
 }
