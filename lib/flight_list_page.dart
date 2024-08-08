@@ -134,13 +134,8 @@ class _FlightListPageState extends State<FlightListPage> {
   void _showFlightDetailsPage(FlightEntity flight) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-
-    // Debugging print statement
-    print('Screen width: $screenWidth, height: $screenHeight');
-
-    // Assuming portrait mode if height is greater than width
+    // If height is greater than width
     final isPortrait = screenHeight > screenWidth;
-
     if (isPortrait) {
       Navigator.push(
         context,
@@ -262,6 +257,7 @@ class _FlightListPageState extends State<FlightListPage> {
                       title: Text('${flight.departureCity} -> ${flight.arrivalCity}'),
                       subtitle: Text('Departure: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.departureTime))} - Arrival: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.arrivalTime))}'),
                       onTap: () {
+                        //If Portrait take us to details page
                         _showFlightDetailsPage(flight);
                       },
                     );
