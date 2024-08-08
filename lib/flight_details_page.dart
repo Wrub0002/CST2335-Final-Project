@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'flight_entity.dart';
-
+///Class flight details page is for portrait users, shows selected flight entity from flight list page and allows for update or deletion.
 class FlightDetailPage extends StatelessWidget {
   final FlightEntity flight;
   final VoidCallback onDelete;

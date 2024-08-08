@@ -8,7 +8,7 @@ class FlightEntity {
   final String arrivalCity;
   final int departureTime;
   final int arrivalTime;
-
+  ///Flight Entity Represents a flight betwenn two cities, with a departure and arrival date.
   FlightEntity(
       this.id,
       this.departureCity,

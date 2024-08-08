@@ -5,7 +5,7 @@ import 'flight_entity.dart';
 import 'flight_list_dao.dart';
 import 'encrypted_preferences.dart';
 
-
+///Class flight list page is a page containing a listView builder that obtains flight data from database and allows for addition, deletion and updating flights.
 class FlightListPage extends StatefulWidget {
   final FlightDao flightDao;
   final EncryptedPreferences encryptedPrefs;
@@ -24,6 +24,7 @@ class _FlightListPageState extends State<FlightListPage> {
   DateTime? _selectedDepartureDate;
   DateTime? _selectedArrivalDate;
   late Future<List<FlightEntity>> _flightsFuture;
+  FlightEntity? _selectedFlight; // Field to track the selected flight for landscape mode
 
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _FlightListPageState extends State<FlightListPage> {
     _flightsFuture = widget.flightDao.findAllFlights();
   }
 
+  ///Method to grab encrypted preferences for flight cities
   Future<void> _loadPreferences() async {
     final departureCity = await widget.encryptedPrefs.getLastDepartureCity();
     final arrivalCity = await widget.encryptedPrefs.getLastArrivalCity();
@@ -42,6 +44,7 @@ class _FlightListPageState extends State<FlightListPage> {
     });
   }
 
+  ///Method that shows a calendar and allows user to select a date
   Future<void> _selectDate(BuildContext context, bool isDeparture) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -62,10 +65,10 @@ class _FlightListPageState extends State<FlightListPage> {
     }
   }
 
+  ///Adds flight to database if values are valid
   Future<void> _addFlight() async {
     final String departureCity = _departureCityController.text;
     final String arrivalCity = _arrivalCityController.text;
-
     if (departureCity.isEmpty || arrivalCity.isEmpty || _selectedDepartureDate == null || _selectedArrivalDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -74,10 +77,16 @@ class _FlightListPageState extends State<FlightListPage> {
       );
       return;
     }
-
+    if (_selectedArrivalDate!.isBefore(_selectedDepartureDate!)){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Arrival date cannot come before Departure date.')
+        ),
+      );
+      return;
+    }
     final int departureTime = _selectedDepartureDate!.millisecondsSinceEpoch;
     final int arrivalTime = _selectedArrivalDate!.millisecondsSinceEpoch;
-
+    ///New flight to be added
     final flight = FlightEntity(
       null, // Assuming `id` is auto-incremented
       departureCity,
@@ -85,14 +94,11 @@ class _FlightListPageState extends State<FlightListPage> {
       departureTime,
       arrivalTime,
     );
-
     await widget.flightDao.insertFlight(flight);
-
     // Save input to encrypted preferences
     await widget.encryptedPrefs.saveLastDepartureCity(departureCity);
     await widget.encryptedPrefs.saveLastArrivalCity(arrivalCity);
-
-    // Clear the input fields
+    ///Clear the input fields
     _departureCityController.clear();
     _arrivalCityController.clear();
     _departureDateController.clear();
@@ -104,6 +110,7 @@ class _FlightListPageState extends State<FlightListPage> {
     });
   }
 
+  ///Deletes selected flight
   Future<void> _deleteFlight(FlightEntity flight) async {
     await widget.flightDao.deleteFlight(flight);
     setState(() {
@@ -111,11 +118,20 @@ class _FlightListPageState extends State<FlightListPage> {
     });
   }
 
+  ///Updates selected flight with New values
   Future<void> _updateFlight(FlightEntity flight) async {
     final String departureCity = _departureCityController.text;
     final String arrivalCity = _arrivalCityController.text;
     final int departureTime = _selectedDepartureDate!.millisecondsSinceEpoch;
     final int arrivalTime = _selectedArrivalDate!.millisecondsSinceEpoch;
+    if (_selectedArrivalDate!.isBefore(_selectedDepartureDate!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Arrival date cannot be earlier than departure date'),
+        ),
+      );
+      return;
+    }
 
     final updatedFlight = FlightEntity(
       flight.id,
@@ -131,11 +147,13 @@ class _FlightListPageState extends State<FlightListPage> {
     });
   }
 
+  ///Shows flight details, if Media Query shows that app is in portrait mode details page is called
   void _showFlightDetailsPage(FlightEntity flight) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     // If height is greater than width
     final isPortrait = screenHeight > screenWidth;
+
     if (isPortrait) {
       Navigator.push(
         context,
@@ -153,10 +171,14 @@ class _FlightListPageState extends State<FlightListPage> {
         ),
       );
     } else {
-      // Handle landscape mode if needed
+      // Handle landscape mode by updating the state
+      setState(() {
+        _selectedFlight = flight;
+      });
     }
   }
 
+  ///Pop-up for landscape, Allows user to choose between updating and deleting selected flight
   void _showUpdateFlightDialog(FlightEntity flight) {
     _departureCityController.text = flight.departureCity;
     _arrivalCityController.text = flight.arrivalCity;
@@ -225,63 +247,88 @@ class _FlightListPageState extends State<FlightListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isPortrait = MediaQuery.of(context).size.height > MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Flight List'),
       ),
-      body: Column(
+      body: Row(
         children: [
           Expanded(
-            child: FutureBuilder<List<FlightEntity>>(
-              future: _flightsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
+            flex: isPortrait ? 1 : 2,
+            child: Column(
+              children: [
+                Expanded(
+                  child: FutureBuilder<List<FlightEntity>>(
+                    future: _flightsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
 
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
+                      //Find flights
+                      final flights = snapshot.data ?? [];
+                      //show no flights
+                      if (flights.isEmpty) {
+                        return Center(child: Text('No flights available.'));
+                      }
 
-                final flights = snapshot.data ?? [];
-
-                if (flights.isEmpty) {
-                  return Center(child: Text('No flights available.'));
-                }
-
-                return ListView.builder(
-                  itemCount: flights.length,
-                  itemBuilder: (context, index) {
-                    final flight = flights[index];
-                    return ListTile(
-                      title: Text('${flight.departureCity} -> ${flight.arrivalCity}'),
-                      subtitle: Text('Departure: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.departureTime))} - Arrival: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.arrivalTime))}'),
-                      onTap: () {
-                        //If Portrait take us to details page
-                        _showFlightDetailsPage(flight);
-                      },
-                    );
-                  },
-                );
-              },
+                      return ListView.builder(
+                        itemCount: flights.length,
+                        itemBuilder: (context, index) {
+                          final flight = flights[index];
+                          return ListTile(
+                            title: Text('${flight.departureCity} -> ${flight.arrivalCity}'),
+                            subtitle: Text('Departure: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.departureTime))} - Arrival: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.arrivalTime))}'),
+                            onTap: () {
+                              _showFlightDetailsPage(flight);
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton.icon(
+                    onPressed: _showAddFlightPopup,
+                    icon: Icon(Icons.airplanemode_active),
+                    label: Text('New Flight?'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 60),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton.icon(
-              onPressed: _showAddFlightPopup,
-              icon: Icon(Icons.airplanemode_active),
-              label: Text('New Flight?'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 60),
+          if (!isPortrait && _selectedFlight != null) // Display flight details in landscape mode
+            Expanded(
+              flex: 2,
+              child: FlightDetailPage(
+                flight: _selectedFlight!,
+                onDelete: () async {
+                  await _deleteFlight(_selectedFlight!);
+                  setState(() {
+                    _selectedFlight = null; // Clear selection after deletion
+                  });
+                },
+                onUpdate: () {
+                  _showUpdateFlightDialog(_selectedFlight!);
+                },
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
+  ///Shows pop-up with textfields for user to fill when they want to add a new flight
   void _showAddFlightPopup() {
     showDialog(
       context: context,
