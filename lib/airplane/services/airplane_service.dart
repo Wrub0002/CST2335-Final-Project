@@ -22,6 +22,7 @@ class AirplaneService {
     await airplaneRepository.insertAirplane(entity);
   }
 
+
   Future<void> updateAirplane(Airplane airplane) async {
     final entity = AirplaneEntity(
       id: airplane.id,
