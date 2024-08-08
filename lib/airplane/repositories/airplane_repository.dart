@@ -1,33 +1,28 @@
 import '../models/airplane_entity.dart';
-import '../repositories/airplane_dao.dart';
+import 'airplane_dao.dart';
 
 class AirplaneRepository {
-  final AirplaneDao _dao;
+  final AirplaneDao airplaneDao;
 
-  AirplaneRepository(this._dao);
+  AirplaneRepository(this.airplaneDao);
 
-  // Insert a new airplane into the database
-  Future<void> insertAirplane(AirplaneEntity airplane) async {
-    await _dao.insertAirplane(airplane);
+  Future<List<AirplaneEntity>> getAllAirplanes() {
+    return airplaneDao.findAllAirplanes();
   }
 
-  // Retrieve all airplanes from the database
-  Future<List<AirplaneEntity>> getAllAirplanes() async {
-    return await _dao.findAllAirplanes();
+  Future<AirplaneEntity?> getAirplaneById(int id) {
+    return airplaneDao.findAirplaneById(id);
   }
 
-  // Retrieve a specific airplane by its ID
-  Future<AirplaneEntity?> getAirplaneById(int id) async {
-    return await _dao.findAirplaneById(id);
+  Future<void> insertAirplane(AirplaneEntity airplane) {
+    return airplaneDao.insertAirplane(airplane);
   }
 
-  // Update an existing airplane in the database
-  Future<void> updateAirplane(AirplaneEntity airplane) async {
-    await _dao.updateAirplane(airplane);
+  Future<void> updateAirplane(AirplaneEntity airplane) {
+    return airplaneDao.updateAirplane(airplane);
   }
 
-  // Delete an airplane from the database
-  Future<void> deleteAirplane(AirplaneEntity airplane) async {
-    await _dao.deleteAirplane(airplane);
+  Future<void> deleteAirplane(AirplaneEntity airplane) {
+    return airplaneDao.deleteAirplane(airplane);
   }
 }

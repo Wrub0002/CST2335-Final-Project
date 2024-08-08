@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import '../models/airplane.dart';
 import '../services/airplane_service.dart';
 import '../validators/airplane_validator.dart';
@@ -21,24 +20,13 @@ class _AirplaneAddViewState extends State<AirplaneAddView> {
   final _speedController = TextEditingController();
   final _rangeController = TextEditingController();
 
-  late EncryptedSharedPreferences _prefs;
-
   @override
-  void initState() {
-    super.initState();
-    _prefs = EncryptedSharedPreferences();
-    _loadSavedData();
-  }
-
-  void _loadSavedData() async {
-    final savedType = await _prefs.getString('airplaneType');
-    if (savedType != null) {
-      _typeController.text = savedType;
-    }
-  }
-
-  void _saveDataToPreferences() async {
-    await _prefs.setString('airplaneType', _typeController.text);
+  void dispose() {
+    _typeController.dispose();
+    _passengersController.dispose();
+    _speedController.dispose();
+    _rangeController.dispose();
+    super.dispose();
   }
 
   void _saveAirplane() async {
@@ -51,21 +39,11 @@ class _AirplaneAddViewState extends State<AirplaneAddView> {
         range: double.parse(_rangeController.text),
       );
       await widget.airplaneService.addAirplane(airplane);
-      _saveDataToPreferences(); // Save to SharedPreferences
       CustomSnackbar.show(context, 'Airplane added successfully.');
-      Navigator.of(context).pop();  // Navigate back to the list
+      Navigator.of(context).pop();
     } else {
       CustomSnackbar.show(context, 'Please correct the errors and try again.');
     }
-  }
-
-  @override
-  void dispose() {
-    _typeController.dispose();
-    _passengersController.dispose();
-    _speedController.dispose();
-    _rangeController.dispose();
-    super.dispose();
   }
 
   @override

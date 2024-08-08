@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
-import '../services/airplane_service.dart';
-import 'airplane_add_view.dart';
 import '../models/airplane.dart';
+import '../services/airplane_service.dart';
 import '../widgets/custom_snackbar.dart';
 import 'airplane_details_view.dart';
+import 'airplane_add_view.dart';
 
 class AirplaneListView extends StatefulWidget {
   final AirplaneService airplaneService;
+  final Function(Airplane) onAirplaneSelected; // Callback function for selection
 
-  AirplaneListView({required this.airplaneService});
+  AirplaneListView({
+    required this.airplaneService,
+    required this.onAirplaneSelected,
+  });
 
   @override
   _AirplaneListViewState createState() => _AirplaneListViewState();
@@ -29,56 +33,19 @@ class _AirplaneListViewState extends State<AirplaneListView> {
     });
   }
 
-  // Navigate to add airplane screen and refresh list after adding
   Future<void> _navigateToAddAirplane() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => AirplaneAddView(airplaneService: widget.airplaneService),
       ),
     );
-    _loadAirplanes(); // Reload the list after returning from the add airplane screen
+    _loadAirplanes();
   }
 
-  // Delete an airplane and refresh the list
   void _deleteAirplane(Airplane airplane) async {
-    await widget.airplaneService.deleteAirplane(airplane);
+    await widget.airplaneService.deleteAirplane(airplane.id);
     CustomSnackbar.show(context, 'Airplane deleted successfully.');
-    _loadAirplanes(); // Refresh the list after deletion
-  }
-
-  // View airplane details
-  void _viewAirplaneDetails(Airplane airplane) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => AirplaneDetailsView(
-          airplane: airplane,
-          airplaneService: widget.airplaneService,
-          onAirplaneUpdated: _loadAirplanes,
-        ),
-      ),
-    );
-  }
-
-  // Show instructions for using the interface
-  void _showInstructions() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Instructions'),
-        content: Text(
-          '1. Add a new airplane by tapping the "+" button.\n'
-              '2. View airplane details by tapping on an airplane in the list.\n'
-              '3. Edit airplane details on the edit page.\n'
-              '4. Delete an airplane using the trash icon next to the airplane name in the list.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
+    _loadAirplanes();
   }
 
   @override
@@ -89,7 +56,7 @@ class _AirplaneListViewState extends State<AirplaneListView> {
         actions: [
           IconButton(
             icon: Icon(Icons.info_outline),
-            onPressed: _showInstructions, // Show instructions dialog
+            onPressed: _showInstructions,
           ),
         ],
       ),
@@ -118,15 +85,11 @@ class _AirplaneListViewState extends State<AirplaneListView> {
                   children: [
                     IconButton(
                       icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteAirplane(airplane), // Delete airplane
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.arrow_forward),
-                      onPressed: () => _viewAirplaneDetails(airplane), // View airplane details
+                      onPressed: () => _deleteAirplane(airplane),
                     ),
                   ],
                 ),
-                onTap: () => _viewAirplaneDetails(airplane), // View airplane details
+                onTap: () => widget.onAirplaneSelected(airplane), // Trigger callback on selection
               );
             },
           );
@@ -134,8 +97,29 @@ class _AirplaneListViewState extends State<AirplaneListView> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddAirplane,
-        child: Icon(Icons.add), // Circular button with a "+" sign
+        child: Icon(Icons.add),
         tooltip: 'Add Airplane',
+      ),
+    );
+  }
+
+  void _showInstructions() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Instructions'),
+        content: Text(
+          '1. Add a new airplane by tapping the "+" button.\n'
+              '2. View airplane details by tapping on an airplane in the list.\n'
+              '3. Edit airplane details on the edit page.\n'
+              '4. Delete an airplane using the trash icon next to the airplane name in the list.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
       ),
     );
   }

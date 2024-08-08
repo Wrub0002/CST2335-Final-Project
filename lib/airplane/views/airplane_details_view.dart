@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/airplane.dart';
 import 'airplane_edit_view.dart';
 import '../services/airplane_service.dart';
-import '../localization/app_localizations.dart';
 
 class AirplaneDetailsView extends StatelessWidget {
   final Airplane airplane;
@@ -29,10 +28,9 @@ class AirplaneDetailsView extends StatelessWidget {
                 builder: (context) => AirplaneEditView(
                   airplane: airplane,
                   airplaneService: airplaneService,
-                  onAirplaneUpdated: onAirplaneUpdated,
+                  onAirplaneUpdated: onAirplaneUpdated, // Pass the callback here
                 ),
-              ))
-                  .then((_) => onAirplaneUpdated());
+              ));
             },
           ),
         ],
@@ -42,13 +40,13 @@ class AirplaneDetailsView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${AppLocalizations.of(context)?.translate('airplane_type')}: ${airplane.type}', style: TextStyle(fontSize: 18)),
+            Text('Type: ${airplane.type}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
-            Text('${AppLocalizations.of(context)?.translate('number_of_passengers')}: ${airplane.numberOfPassengers}', style: TextStyle(fontSize: 18)),
+            Text('Passengers: ${airplane.numberOfPassengers}', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
-            Text('${AppLocalizations.of(context)?.translate('max_speed')}: ${airplane.maxSpeed} km/h', style: TextStyle(fontSize: 18)),
+            Text('Max Speed: ${airplane.maxSpeed} km/h', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
-            Text('${AppLocalizations.of(context)?.translate('range')}: ${airplane.range} km', style: TextStyle(fontSize: 18)),
+            Text('Range: ${airplane.range} km', style: TextStyle(fontSize: 18)),
           ],
         ),
       ),

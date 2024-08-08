@@ -3,26 +3,25 @@ import 'airplane.dart';
 
 @entity
 class AirplaneEntity {
-  @PrimaryKey(autoGenerate: true)
-  final int? id; // Make ID nullable and auto-generate
-
+  @primaryKey
+  final int id;
   final String type;
   final int numberOfPassengers;
   final double maxSpeed;
   final double range;
 
   AirplaneEntity({
-    this.id, // ID is now optional and will be auto-generated
+    required this.id,
     required this.type,
     required this.numberOfPassengers,
     required this.maxSpeed,
     required this.range,
   });
 
-  // Convert to DTO
+  // Convert to DTO (Data Transfer Object)
   Airplane toAirplane() {
     return Airplane(
-      id: id ?? 0, // Provide a fallback value if ID is null
+      id: id,
       type: type,
       numberOfPassengers: numberOfPassengers,
       maxSpeed: maxSpeed,
@@ -33,6 +32,7 @@ class AirplaneEntity {
   // Convert from DTO
   static AirplaneEntity fromAirplane(Airplane airplane) {
     return AirplaneEntity(
+      id: airplane.id,
       type: airplane.type,
       numberOfPassengers: airplane.numberOfPassengers,
       maxSpeed: airplane.maxSpeed,
