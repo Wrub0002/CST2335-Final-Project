@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'flight_details_page.dart';
 import 'flight_entity.dart';
 import 'flight_list_dao.dart';
 import 'encrypted_preferences.dart';
+
 
 class FlightListPage extends StatefulWidget {
   final FlightDao flightDao;
@@ -21,12 +23,13 @@ class _FlightListPageState extends State<FlightListPage> {
   final TextEditingController _arrivalDateController = TextEditingController();
   DateTime? _selectedDepartureDate;
   DateTime? _selectedArrivalDate;
+  late Future<List<FlightEntity>> _flightsFuture;
 
   @override
   void initState() {
     super.initState();
-    _loadFlights();
     _loadPreferences();
+    _flightsFuture = widget.flightDao.findAllFlights();
   }
 
   Future<void> _loadPreferences() async {
@@ -97,19 +100,15 @@ class _FlightListPageState extends State<FlightListPage> {
     setState(() {
       _selectedDepartureDate = null;
       _selectedArrivalDate = null;
+      _flightsFuture = widget.flightDao.findAllFlights(); // Reload the list of flights
     });
-
-    // Refresh the list of flights
-    _loadFlights();
-  }
-
-  Future<void> _loadFlights() async {
-    setState(() {});
   }
 
   Future<void> _deleteFlight(FlightEntity flight) async {
     await widget.flightDao.deleteFlight(flight);
-    _loadFlights();
+    setState(() {
+      _flightsFuture = widget.flightDao.findAllFlights(); // Reload the list of flights
+    });
   }
 
   Future<void> _updateFlight(FlightEntity flight) async {
@@ -127,63 +126,40 @@ class _FlightListPageState extends State<FlightListPage> {
     );
 
     await widget.flightDao.updateFlight(updatedFlight);
-    _loadFlights();
+    setState(() {
+      _flightsFuture = widget.flightDao.findAllFlights(); // Reload the list of flights
+    });
   }
 
-  void _showFlightDetails(FlightEntity flight) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Flight Details'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Departure: ${flight.departureCity} -> Arrival: ${flight.arrivalCity}'),
-            Text('Departure Time: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.departureTime))}'),
-            Text('Arrival Time: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.arrivalTime))}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => _showUpdateFlightDialog(flight),
-            child: Text('Update'),
-          ),
-          TextButton(
-            onPressed: () => _confirmDeleteFlight(flight),
-            child: Text('Delete'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
+  void _showFlightDetailsPage(FlightEntity flight) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
-  void _confirmDeleteFlight(FlightEntity flight) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete this flight?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              _deleteFlight(flight);
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(); // Close the details dialog
+    // Debugging print statement
+    print('Screen width: $screenWidth, height: $screenHeight');
+
+    // Assuming portrait mode if height is greater than width
+    final isPortrait = screenHeight > screenWidth;
+
+    if (isPortrait) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FlightDetailPage(
+            flight: flight,
+            onDelete: () async {
+              await _deleteFlight(flight);
+              Navigator.pop(context); // Return to the previous page after deleting
             },
-            child: Text('Delete'),
+            onUpdate: () {
+              _showUpdateFlightDialog(flight);
+            },
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    } else {
+      // Handle landscape mode if needed
+    }
   }
 
   void _showUpdateFlightDialog(FlightEntity flight) {
@@ -237,10 +213,9 @@ class _FlightListPageState extends State<FlightListPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              _updateFlight(flight);
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(); // Close the details dialog
+            onPressed: () async {
+              await _updateFlight(flight);
+              Navigator.of(context).pop(); // Close the dialog after updating
             },
             child: Text('Confirm'),
           ),
@@ -253,11 +228,69 @@ class _FlightListPageState extends State<FlightListPage> {
     );
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flight List'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: FutureBuilder<List<FlightEntity>>(
+              future: _flightsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                final flights = snapshot.data ?? [];
+
+                if (flights.isEmpty) {
+                  return Center(child: Text('No flights available.'));
+                }
+
+                return ListView.builder(
+                  itemCount: flights.length,
+                  itemBuilder: (context, index) {
+                    final flight = flights[index];
+                    return ListTile(
+                      title: Text('${flight.departureCity} -> ${flight.arrivalCity}'),
+                      subtitle: Text('Departure: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.departureTime))} - Arrival: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.arrivalTime))}'),
+                      onTap: () {
+                        _showFlightDetailsPage(flight);
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton.icon(
+              onPressed: _showAddFlightPopup,
+              icon: Icon(Icons.airplanemode_active),
+              label: Text('New Flight?'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 60),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showAddFlightPopup() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Add New Flight'),
+        title: Text('New Flight'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -297,72 +330,12 @@ class _FlightListPageState extends State<FlightListPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              _addFlight();
-              Navigator.of(context).pop();
-            },
+            onPressed: _addFlight,
             child: Text('Add Flight'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('B(rian) L(eo) T(anek) Flight List'),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: FutureBuilder<List<FlightEntity>>(
-              future: widget.flightDao.findAllFlights(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-
-                final flights = snapshot.data ?? [];
-
-                if (flights.isEmpty) {
-                  return Center(child: Text('No flights available.'));
-                }
-
-                return ListView.builder(
-                  itemCount: flights.length,
-                  itemBuilder: (context, index) {
-                    final flight = flights[index];
-                    return ListTile(
-                      title: Text('${flight.departureCity} -> ${flight.arrivalCity}'),
-                      subtitle: Text('Departure: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.departureTime))} - Arrival: ${DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(flight.arrivalTime))}'),
-                      onTap: () => _showFlightDetails(flight),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton.icon(
-              onPressed: _showAddFlightPopup,
-              icon: Icon(Icons.airplanemode_active),
-              label: Text('New Flight?'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 60), // Make button larger
-                textStyle: TextStyle(fontSize: 18),
-              ),
-            ),
           ),
         ],
       ),
