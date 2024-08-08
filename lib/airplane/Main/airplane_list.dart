@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'airplane/services/airplane_service.dart';
-import 'airplane/initializers/app_initializer.dart';
-import 'airplane/layout/responsive_layout.dart';
+import '../services/airplane_service.dart';
+import '../initializers/app_initializer.dart';
+import '../layout/responsive_layout.dart';
 
 
 void main() async {
