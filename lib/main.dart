@@ -10,6 +10,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,19 +23,13 @@ void main() async {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      initialRoute: '/pageTwo',
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+
+      home: MyHomePage(),
     );
   }
 }
 
-
-  // Initialize the airplane service using the AppInitializer class
-  final airplaneService = await AppInitializer.initializeAirplaneService();
-
-
-  runApp(MyApp(airplaneService: airplaneService));
-  final String title;
+class MyHomePage extends StatefulWidget {
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -58,7 +53,9 @@ class MyApp extends StatelessWidget {
 
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
 
+
         title: Text(widget.title),
+
       ),
       body: Center(
 
@@ -66,18 +63,31 @@ class MyApp extends StatelessWidget {
 
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            ElevatedButton.icon(
+              onPressed: _navigateToFlightListPage,
+              icon: const Icon(Icons.flight),
+              label: const Text('Go to Flight List Page'),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+            // Add more buttons for other pages if needed
           ],
         ),
       ),
-      debugShowCheckedModeBanner: false, // Add this line to remove the DEBUG banner
-      home: ResponsiveLayout(airplaneService: airplaneService),
+    );
+  }
+
+  void _navigateToFlightListPage() async {
+    final database = await $FloorFlightDatabase.databaseBuilder('flight_database.db').build();
+    final flightDao = database.flightDao;
+    final encryptedPrefs = EncryptedPreferences();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FlightListPage(
+          flightDao: flightDao,
+          encryptedPrefs: encryptedPrefs,
+        ),
+      ),
     );
   }
 }
+

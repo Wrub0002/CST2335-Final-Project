@@ -8,14 +8,19 @@ environment:
   sdk: '>=3.4.1 <4.0.0'
 
 assets:
-  -assets/translation/en.json
-  -assets/translation/fr.json
+  - assets/translation/en.json
+  - assets/translation/fr.json
 
 dependencies:
   flutter:
     sdk: flutter
 
-
+  encrypted_shared_preferences: ^3.0.0  # Add this line
+  floor: ^1.2.0
+  floor_annotation: ^1.0.0
+  sqflite: ^2.0.0+4
+  intl: ^0.19.0
+  cupertino_icons: ^1.0.6
 
   flutter_localizations:
     sdk: flutter
@@ -47,6 +52,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+
     - assets/translations/en.json
     - assets/translations/am.json
   #   - images/a_dot_burr.jpeg
@@ -77,4 +83,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
 
