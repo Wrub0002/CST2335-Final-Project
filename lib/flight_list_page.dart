@@ -7,6 +7,7 @@ import 'encrypted_preferences.dart';
 
 ///Class flight list page is a page containing a listView builder that obtains flight data from database and allows for addition, deletion and updating flights.
 class FlightListPage extends StatefulWidget {
+  ///DAO For Flight Entity
   final FlightDao flightDao;
   final EncryptedPreferences encryptedPrefs;
 
