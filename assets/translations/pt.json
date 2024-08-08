@@ -1,0 +1,12 @@
+{
+  "title": "Aviões",
+  "add_airplane": "Adicionar Avião",
+  "edit_airplane": "Editar Avião",
+  "airplane_type": "Tipo",
+  "number_of_passengers": "Número de Passageiros",
+  "max_speed": "Velocidade Máxima (km/h)",
+  "range": "Alcance (km)",
+  "saved": "Salvo com sucesso",
+  "error": "Erro ao carregar aviões",
+  "no_airplanes": "Nenhum avião disponível"
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Airplanes",
+  "add_airplane": "Add Airplane",
+  "edit_airplane": "Edit Airplane",
+  "airplane_type": "Type",
+  "number_of_passengers": "Number of Passengers",
+  "max_speed": "Maximum Speed (km/h)",
+  "range": "Range (km)",
+  "saved": "Saved successfully",
+  "error": "Error loading airplanes",
+  "no_airplanes": "No airplanes available"
+}

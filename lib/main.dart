@@ -1,21 +1,32 @@
 import 'package:flutter/material.dart';
-import 'screens/airplane_list_screen.dart';
+import 'airplane/services/airplane_service.dart';
+import 'airplane/initializers/app_initializer.dart';
+import 'airplane/layout/responsive_layout.dart';
 
-/// The entry point of the Airplane Manager application.
-void main() {
-  runApp(AirplaneApp());
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the airplane service using the AppInitializer class
+  final airplaneService = await AppInitializer.initializeAirplaneService();
+
+  runApp(MyApp(airplaneService: airplaneService));
 }
 
-/// The root widget of the Airplane Manager application.
-class AirplaneApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  final AirplaneService airplaneService;
+
+  MyApp({required this.airplaneService});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Airplane Manager',
+      title: 'Airplane Management',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: AirplaneListScreen(),
+      debugShowCheckedModeBanner: false, // Add this line to remove the DEBUG banner
+      home: ResponsiveLayout(airplaneService: airplaneService),
     );
   }
 }
