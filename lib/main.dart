@@ -1,8 +1,12 @@
+import 'package:cst2335_final_project/AppLocalizations.dart';
 import 'package:flutter/material.dart';
 import 'flight_list_page.dart';
 import 'flight_list_dao.dart';
 import 'flight_list_db.dart';
 import 'encrypted_preferences.dart'; // Import the EncryptedPreferences class
+import 'package:cst2335_final_project/CustomerListPage.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,12 +30,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flight Management',
+
+      routes: {
+        '/pageOne' : (context) => const MyHomePage(title: 'Home Page'),
+        '/pageTwo' : (context) {return const CustomerListPage();}
+      },
+      title: 'Flutter Demo',
+
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+
       home: MyHomePage(title: 'Flight Management', flightDao: flightDao, encryptedPrefs: encryptedPrefs),
+
     );
   }
 }
