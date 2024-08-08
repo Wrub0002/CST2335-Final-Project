@@ -17,6 +17,7 @@ class FlightListPage extends StatefulWidget {
 }
 
 class _FlightListPageState extends State<FlightListPage> {
+  //text controllers
   final TextEditingController _departureCityController = TextEditingController();
   final TextEditingController _arrivalCityController = TextEditingController();
   final TextEditingController _departureDateController = TextEditingController();
@@ -24,7 +25,8 @@ class _FlightListPageState extends State<FlightListPage> {
   DateTime? _selectedDepartureDate;
   DateTime? _selectedArrivalDate;
   late Future<List<FlightEntity>> _flightsFuture;
-  FlightEntity? _selectedFlight; // Field to track the selected flight for landscape mode
+  ///Field is to track and display seslected flight when in landscape mode
+  FlightEntity? _selectedFlight;
 
   @override
   void initState() {
