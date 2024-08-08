@@ -1,24 +1,25 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:async';
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 
 class EncryptedPreferences {
-  final FlutterSecureStorage _storage = FlutterSecureStorage();
+  final EncryptedSharedPreferences _prefs = EncryptedSharedPreferences();
 
   static const String _departureCityKey = 'departureCity';
   static const String _arrivalCityKey = 'arrivalCity';
 
   Future<void> saveLastDepartureCity(String city) async {
-    await _storage.write(key: _departureCityKey, value: city);
+    await _prefs.setString(_departureCityKey, city);
   }
 
   Future<void> saveLastArrivalCity(String city) async {
-    await _storage.write(key: _arrivalCityKey, value: city);
+    await _prefs.setString(_arrivalCityKey, city);
   }
 
   Future<String?> getLastDepartureCity() async {
-    return await _storage.read(key: _departureCityKey);
+    return await _prefs.getString(_departureCityKey);
   }
 
   Future<String?> getLastArrivalCity() async {
-    return await _storage.read(key: _arrivalCityKey);
+    return await _prefs.getString(_arrivalCityKey);
   }
 }
