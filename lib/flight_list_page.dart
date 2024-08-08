@@ -247,13 +247,50 @@ class _FlightListPageState extends State<FlightListPage> {
     );
   }
 
+  /// Function to show instructions popup with plain text and OK button to return
+  void _showInstructionsPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Instructions'),
+        content: Text(
+          'This Page Is Used To Update The Selected Flight Between Two Cities. Please Ensure That All Fields Are Filled Out. Arrival Date Cannot Be Earlier Than Departure Date.',
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final isPortrait = MediaQuery.of(context).size.height > MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flight List'),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Flight List'),
+            Row(
+              children: [
+                TextButton.icon(
+                  icon: Icon(Icons.help_outline),
+                  label: Text('Instructions'),
+                  onPressed: () => _showInstructionsPopup(context),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
       body: Row(
         children: [
