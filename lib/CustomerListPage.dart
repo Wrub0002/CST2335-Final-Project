@@ -133,8 +133,6 @@ class CustomerListPageState extends State<CustomerListPage> {
               },
               child: const Text('Info'),
             ),
-            OutlinedButton(
-                onPressed: goBack, child: Text("Go Back")),
 
           ],
         ),
@@ -155,9 +153,6 @@ class CustomerListPageState extends State<CustomerListPage> {
     );
   }
 
-  void goBack(){
-    Navigator.pushNamed( context, '/mainPage' );
-  }
   /// Displays instructions
   _instructions(BuildContext context) {
     showDialog(
