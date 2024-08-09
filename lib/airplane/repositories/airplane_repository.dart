@@ -1,7 +1,6 @@
 import '../models/airplane_entity.dart';
 import 'airplane_dao.dart';
 
-/// A repository class that abstracts the data layer for managing airplanes.
 class AirplaneRepository {
   final AirplaneDao airplaneDao;
 

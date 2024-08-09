@@ -1,9 +1,6 @@
 import 'package:floor/floor.dart';
 import '../models/airplane_entity.dart';
 
-/// Data Access Object (DAO) for interacting with the airplane data in the database.
-///
-/// This abstract class defines methods for performing CRUD (Create, Read, Update, Delete)
 @dao
 abstract class AirplaneDao {
   @Query('SELECT * FROM AirplaneEntity')

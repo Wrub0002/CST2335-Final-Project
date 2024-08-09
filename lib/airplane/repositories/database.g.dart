@@ -96,7 +96,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `AirplaneEntity` (`id` INTEGER NOT NULL, `type` TEXT NOT NULL, `numberOfPassengers` INTEGER NOT NULL, `maxSpeed` REAL NOT NULL, `range` REAL NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `AirplaneEntity` (`id` INTEGER, `type` TEXT NOT NULL, `numberOfPassengers` INTEGER NOT NULL, `maxSpeed` REAL NOT NULL, `range` REAL NOT NULL, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -164,7 +164,7 @@ class _$AirplaneDao extends AirplaneDao {
   Future<List<AirplaneEntity>> findAllAirplanes() async {
     return _queryAdapter.queryList('SELECT * FROM AirplaneEntity',
         mapper: (Map<String, Object?> row) => AirplaneEntity(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             type: row['type'] as String,
             numberOfPassengers: row['numberOfPassengers'] as int,
             maxSpeed: row['maxSpeed'] as double,
@@ -175,7 +175,7 @@ class _$AirplaneDao extends AirplaneDao {
   Future<AirplaneEntity?> findAirplaneById(int id) async {
     return _queryAdapter.query('SELECT * FROM AirplaneEntity WHERE id = ?1',
         mapper: (Map<String, Object?> row) => AirplaneEntity(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             type: row['type'] as String,
             numberOfPassengers: row['numberOfPassengers'] as int,
             maxSpeed: row['maxSpeed'] as double,

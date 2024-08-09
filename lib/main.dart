@@ -1,83 +1,137 @@
-import 'package:cst2335_final_project/AppLocalizations.dart';
 import 'package:flutter/material.dart';
-import 'airplane/services/airplane_service.dart';
-import 'airplane/initializers/app_initializer.dart';
-import 'airplane/layout/responsive_layout.dart';
-import 'package:cst2335_final_project/CustomerListPage.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-
-
+import 'CustomerListPage.dart';
+import 'flight_list_dao.dart';
+import 'flight_list_db.dart';
+import 'flight_list_page.dart';
+import 'encrypted_preferences.dart';
+import 'package:cst2335_final_project/airplane/initializers/database_initializer.dart';
+import 'package:cst2335_final_project/airplane/services/airplane_service.dart';
+import 'package:cst2335_final_project/airplane/views/airplane_responsive_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the flight database
+  final flightDatabase = await $FloorFlightDatabase.databaseBuilder('flight_database.db').build();
+  final flightDao = flightDatabase.flightDao;
+
+  // Initialize encrypted preferences
+  final encryptedPrefs = EncryptedPreferences();
+
+  // Initialize the airplane service
+  final airplaneService = await DatabaseInitializer.initializeAirplaneService();
+
+  runApp(MyApp(
+    flightDao: flightDao,
+    encryptedPrefs: encryptedPrefs,
+    airplaneService: airplaneService,
+  ));
+}
+
+class MyApp extends StatelessWidget {
+  final FlightDao flightDao;
+  final EncryptedPreferences encryptedPrefs;
+  final AirplaneService airplaneService;
+
+  MyApp({
+    required this.flightDao,
+    required this.encryptedPrefs,
+    required this.airplaneService,
+  });
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      routes: {
-        '/pageOne' : (context) => const MyHomePage(title: 'Home Page'),
-        '/pageTwo' : (context) {return const CustomerListPage();}
-      },
-      title: 'Flutter Demo',
+      title: 'Airplane Management',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      initialRoute: '/pageTwo',
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(
+        flightDao: flightDao,
+        encryptedPrefs: encryptedPrefs,
+        airplaneService: airplaneService,
+      ),
+      routes: {
+        '/customerList': (context) => const CustomerListPage(),
+        '/homePage': (context) => MyApp(flightDao: flightDao, encryptedPrefs: encryptedPrefs, airplaneService: airplaneService)
+      },
     );
   }
 }
 
+class MyHomePage extends StatefulWidget {
+  final FlightDao flightDao;
+  final EncryptedPreferences encryptedPrefs;
+  final AirplaneService airplaneService;
 
-  // Initialize the airplane service using the AppInitializer class
-  final airplaneService = await AppInitializer.initializeAirplaneService();
-
-
-  runApp(MyApp(airplaneService: airplaneService));
-  final String title;
+  MyHomePage({
+    required this.flightDao,
+    required this.encryptedPrefs,
+    required this.airplaneService,
+  });
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class MyApp extends StatelessWidget {
-  final AirplaneService airplaneService;
-
-  MyApp({required this.airplaneService});
-
+class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-
-    return MaterialApp(
-      title: 'Airplane Management',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-
     return Scaffold(
       appBar: AppBar(
-
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-
-        title: Text(widget.title),
+        title: Text('Home Page'),
       ),
       body: Center(
-
         child: Column(
-
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            ElevatedButton.icon(
+              onPressed: _navigateToFlightListPage,
+              icon: const Icon(Icons.flight),
+              label: const Text('Go to Flight List Page'),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            ElevatedButton.icon(
+              onPressed: _navigateToCustomerListPage,
+              icon: const Icon(Icons.people),
+              label: const Text('Go to Customer List Page'),
+            ),
+            ElevatedButton.icon(
+              onPressed: _navigateToAirplanePage,
+              icon: const Icon(Icons.airplanemode_active),
+              label: const Text('Go to Airplane Management'),
             ),
           ],
         ),
       ),
-      debugShowCheckedModeBanner: false, // Add this line to remove the DEBUG banner
-      home: ResponsiveLayout(airplaneService: airplaneService),
+    );
+  }
+
+  void _navigateToCustomerListPage() {
+    Navigator.pushNamed(context, '/customerList');
+  }
+
+  void _navigateToFlightListPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FlightListPage(
+          flightDao: widget.flightDao,
+          encryptedPrefs: widget.encryptedPrefs,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToAirplanePage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AirplaneResponsiveView(
+          airplaneService: widget.airplaneService,
+        ),
+      ),
     );
   }
 }

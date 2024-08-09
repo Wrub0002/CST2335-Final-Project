@@ -1,29 +1,27 @@
 import 'package:floor/floor.dart';
 import 'airplane.dart';
 
-/// Represents an entity for storing airplane data in the database.
 @entity
 class AirplaneEntity {
   @primaryKey
-  final int id;
+  final int? id; // Make ID nullable to allow auto-increment
   final String type;
   final int numberOfPassengers;
   final double maxSpeed;
   final double range;
 
-  /// Creates a new instance of [AirplaneEntity] with the given parameters.
   AirplaneEntity({
-    required this.id,
+    this.id, // ID is nullable, so the database can auto-generate it
     required this.type,
     required this.numberOfPassengers,
     required this.maxSpeed,
     required this.range,
   });
 
-  /// Converts this [AirplaneEntity] instance to an [Airplane] data model.
+  // Convert to DTO (Data Transfer Object)
   Airplane toAirplane() {
     return Airplane(
-      id: id,
+      id: id ?? 0, // Ensure a valid ID is returned
       type: type,
       numberOfPassengers: numberOfPassengers,
       maxSpeed: maxSpeed,
@@ -31,10 +29,10 @@ class AirplaneEntity {
     );
   }
 
-  /// Converts an [Airplane] data model to an [AirplaneEntity].
+  // Convert from DTO
   static AirplaneEntity fromAirplane(Airplane airplane) {
     return AirplaneEntity(
-      id: airplane.id,
+      id: airplane.id > 0 ? airplane.id : null, // If the ID is 0, allow the database to auto-generate it
       type: airplane.type,
       numberOfPassengers: airplane.numberOfPassengers,
       maxSpeed: airplane.maxSpeed,

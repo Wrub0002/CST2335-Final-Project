@@ -1,5 +1,3 @@
-
-/// A utility class that provides validation methods for airplane-related fields.
 class AirplaneValidator {
   static String? validateType(String? value) {
     if (value == null || value.isEmpty) {

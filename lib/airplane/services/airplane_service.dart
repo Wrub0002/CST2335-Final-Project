@@ -2,7 +2,6 @@ import '../models/airplane.dart';
 import '../repositories/airplane_repository.dart';
 import '../models/airplane_entity.dart';
 
-/// A service class that handles the business logic for managing airplanes.
 class AirplaneService {
   final AirplaneRepository airplaneRepository;
 
@@ -23,8 +22,15 @@ class AirplaneService {
     await airplaneRepository.insertAirplane(entity);
   }
 
+
   Future<void> updateAirplane(Airplane airplane) async {
-    final entity = AirplaneEntity.fromAirplane(airplane);
+    final entity = AirplaneEntity(
+      id: airplane.id,
+      type: airplane.type,
+      numberOfPassengers: airplane.numberOfPassengers,
+      maxSpeed: airplane.maxSpeed,
+      range: airplane.range,
+    );
     await airplaneRepository.updateAirplane(entity);
   }
 

@@ -55,8 +55,8 @@ class _AirplaneEditViewState extends State<AirplaneEditView> {
       );
       await widget.airplaneService.updateAirplane(updatedAirplane);
       CustomSnackbar.show(context, 'Airplane updated successfully.');
-      widget.onAirplaneUpdated();
-      Navigator.of(context).pop();
+      widget.onAirplaneUpdated();  // Refresh the list
+      Navigator.of(context).pop();  // Go back to the list
     }
   }
 

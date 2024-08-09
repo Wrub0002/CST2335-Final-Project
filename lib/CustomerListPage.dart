@@ -4,8 +4,6 @@ import 'package:cst2335_final_project/CustomerDatabase.dart';
 import 'package:cst2335_final_project/CustomerRepository.dart';
 import 'package:cst2335_final_project/CustomerDAO.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
-import 'AppLocalizations.dart';
 import 'CustomerItem.dart';
 
 class CustomerListPage extends StatefulWidget {
@@ -116,20 +114,18 @@ class CustomerListPageState extends State<CustomerListPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      supportedLocales: const [
-        Locale('en', 'CA'),
-        Locale('am', 'US'),
-      ],
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
+
       locale: _locale,
       home: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: const Text("Profile Page"),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
           actions: <Widget>[
             ElevatedButton(
               onPressed: () {
@@ -137,10 +133,7 @@ class CustomerListPageState extends State<CustomerListPage> {
               },
               child: const Text('Info'),
             ),
-            OutlinedButton(
-                onPressed: languageUS, child: Text("Switch To American")),
-            OutlinedButton(
-                onPressed: languageCA, child: Text("Switch to Canadian")),
+
           ],
         ),
         body: Center(
@@ -156,30 +149,6 @@ class CustomerListPageState extends State<CustomerListPage> {
             }
           }(),
         ),
-      ),
-    );
-  }
-
-  /// Called to change language to Canadian English
-  void languageCA() async {
-    CustomerListPage.setLocale(context, Locale("en", "CA"));
-    await Future.delayed(Duration(milliseconds: 100));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.translate('place')!),
-        duration: Duration(seconds: 3),
-      ),
-    );
-  }
-
-  /// Called to change Language to American English
-  void languageUS() async {
-    CustomerListPage.setLocale(context, Locale("am", "US"));
-    await Future.delayed(Duration(milliseconds: 100));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.translate('place')!),
-        duration: Duration(seconds: 3),
       ),
     );
   }

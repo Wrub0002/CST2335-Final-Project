@@ -28,7 +28,7 @@ class AirplaneDetailsView extends StatelessWidget {
                 builder: (context) => AirplaneEditView(
                   airplane: airplane,
                   airplaneService: airplaneService,
-                  onAirplaneUpdated: onAirplaneUpdated,
+                  onAirplaneUpdated: onAirplaneUpdated, // Pass the callback here
                 ),
               ));
             },
