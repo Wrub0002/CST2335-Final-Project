@@ -54,6 +54,7 @@ class MyApp extends StatelessWidget {
       ),
       routes: {
         '/customerList': (context) => const CustomerListPage(),
+        '/homePage': (context) => MyApp(flightDao: flightDao, encryptedPrefs: encryptedPrefs, airplaneService: airplaneService)
       },
     );
   }
