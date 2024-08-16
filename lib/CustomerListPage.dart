@@ -120,6 +120,12 @@ class CustomerListPageState extends State<CustomerListPage> {
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: const Text("Profile Page"),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
           actions: <Widget>[
             ElevatedButton(
               onPressed: () {
@@ -127,7 +133,6 @@ class CustomerListPageState extends State<CustomerListPage> {
               },
               child: const Text('Info'),
             ),
-
 
           ],
         ),
