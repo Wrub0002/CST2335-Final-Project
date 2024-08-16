@@ -1,3 +1,4 @@
+/// Model class representing an airplane.
 class Airplane {
   final int id;
   final String type;
@@ -5,6 +6,7 @@ class Airplane {
   final double maxSpeed;
   final double range;
 
+  /// Constructor for Airplane, requires all fields to be provided.
   Airplane({
     required this.id,
     required this.type,
@@ -12,6 +14,4 @@ class Airplane {
     required this.maxSpeed,
     required this.range,
   });
-
-
 }

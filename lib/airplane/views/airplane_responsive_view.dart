@@ -4,9 +4,11 @@ import '../services/airplane_service.dart';
 import 'airplane_list_view.dart';
 import 'airplane_details_view.dart';
 
+/// A responsive view for managing airplanes, adjusting between list and detail views based on screen size.
 class AirplaneResponsiveView extends StatefulWidget {
   final AirplaneService airplaneService;
 
+  /// Constructor for AirplaneResponsiveView, requires an instance of AirplaneService.
   AirplaneResponsiveView({required this.airplaneService});
 
   @override
@@ -15,6 +17,20 @@ class AirplaneResponsiveView extends StatefulWidget {
 
 class _AirplaneResponsiveViewState extends State<AirplaneResponsiveView> {
   Airplane? _selectedAirplane;
+
+  /// Handles the selection of an airplane from the list.
+  void _onAirplaneSelected(Airplane airplane) {
+    setState(() {
+      _selectedAirplane = airplane;
+    });
+  }
+
+  /// Refreshes the airplane list when an airplane is updated.
+  void _refreshAirplaneList() {
+    setState(() {
+      _selectedAirplane = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,17 +43,7 @@ class _AirplaneResponsiveViewState extends State<AirplaneResponsiveView> {
       body: isMobile
           ? AirplaneListView(
         airplaneService: widget.airplaneService,
-        onAirplaneSelected: (airplane) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => AirplaneDetailsView(
-                airplane: airplane,
-                airplaneService: widget.airplaneService,
-                onAirplaneUpdated: _updateAirplaneList,
-              ),
-            ),
-          );
-        },
+        onAirplaneSelected: _onAirplaneSelected,
       )
           : Row(
         children: [
@@ -45,31 +51,21 @@ class _AirplaneResponsiveViewState extends State<AirplaneResponsiveView> {
             flex: 1,
             child: AirplaneListView(
               airplaneService: widget.airplaneService,
-              onAirplaneSelected: (airplane) {
-                setState(() {
-                  _selectedAirplane = airplane;
-                });
-              },
+              onAirplaneSelected: _onAirplaneSelected,
             ),
           ),
           Expanded(
             flex: 2,
             child: _selectedAirplane != null
-                ? AirplaneDetailsView(
-              airplane: _selectedAirplane!,
+                ? AirplaneDetailsPage(
               airplaneService: widget.airplaneService,
-              onAirplaneUpdated: _updateAirplaneList,
+              airplaneId: _selectedAirplane!.id,
+              onAirplaneUpdated: _refreshAirplaneList,
             )
                 : Center(child: Text('Select an airplane')),
           ),
         ],
       ),
     );
-  }
-
-  void _updateAirplaneList() {
-    setState(() {
-      // Refresh the airplane list or update any necessary state
-    });
   }
 }

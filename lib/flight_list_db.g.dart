@@ -96,7 +96,7 @@ class _$FlightDatabase extends FlightDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `FlightEntity` (`id` INTEGER, `departureCity` TEXT NOT NULL, `arrivalCity` TEXT NOT NULL, `departureTime` INTEGER NOT NULL, `arrivalTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `FlightEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `departureCity` TEXT NOT NULL, `arrivalCity` TEXT NOT NULL, `departureTime` INTEGER NOT NULL, `arrivalTime` INTEGER NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },

@@ -2,16 +2,17 @@ import '../repositories/airplane_repository.dart';
 import '../services/airplane_service.dart';
 import '../repositories/database.dart';
 
+/// Utility class for initializing the airplane service and the database.
 class DatabaseInitializer {
+
+  /// Initializes the AirplaneService by setting up the database and repository.
   static Future<AirplaneService> initializeAirplaneService() async {
-    // Initialize the database
+
     final database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
 
-    // Initialize the DAO and repository
     final airplaneDao = database.airplaneDao;
     final airplaneRepository = AirplaneRepository(airplaneDao);
 
-    // Initialize and return the service
     return AirplaneService(airplaneRepository);
   }
 }

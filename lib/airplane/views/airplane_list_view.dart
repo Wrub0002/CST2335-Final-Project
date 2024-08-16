@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import '../models/airplane.dart';
 import '../services/airplane_service.dart';
 import '../widgets/custom_snackbar.dart';
-import 'airplane_details_view.dart';
 import 'airplane_add_view.dart';
 
+/// A view displaying a list of airplanes.
 class AirplaneListView extends StatefulWidget {
   final AirplaneService airplaneService;
-  final Function(Airplane) onAirplaneSelected; // Callback function for selection
+  final Function(Airplane) onAirplaneSelected;
 
+  /// Constructor for AirplaneListView, requires an instance of AirplaneService and a selection callback.
   AirplaneListView({
     required this.airplaneService,
     required this.onAirplaneSelected,
@@ -27,12 +28,14 @@ class _AirplaneListViewState extends State<AirplaneListView> {
     _loadAirplanes();
   }
 
+  /// Loads the list of airplanes from the database.
   void _loadAirplanes() {
     setState(() {
       _airplanesFuture = widget.airplaneService.getAllAirplanes();
     });
   }
 
+  /// Navigates to the Add Airplane view.
   Future<void> _navigateToAddAirplane() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -42,6 +45,7 @@ class _AirplaneListViewState extends State<AirplaneListView> {
     _loadAirplanes();
   }
 
+  /// Deletes the selected airplane from the database.
   void _deleteAirplane(Airplane airplane) async {
     await widget.airplaneService.deleteAirplane(airplane.id);
     CustomSnackbar.show(context, 'Airplane deleted successfully.');
@@ -80,16 +84,11 @@ class _AirplaneListViewState extends State<AirplaneListView> {
               return ListTile(
                 title: Text(airplane.type),
                 subtitle: Text('Passengers: ${airplane.numberOfPassengers}'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteAirplane(airplane),
-                    ),
-                  ],
+                trailing: IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _deleteAirplane(airplane),
                 ),
-                onTap: () => widget.onAirplaneSelected(airplane), // Trigger callback on selection
+                onTap: () => widget.onAirplaneSelected(airplane),
               );
             },
           );
@@ -103,6 +102,7 @@ class _AirplaneListViewState extends State<AirplaneListView> {
     );
   }
 
+  /// Shows instructions on how to use the airplane management system.
   void _showInstructions() {
     showDialog(
       context: context,

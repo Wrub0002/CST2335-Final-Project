@@ -4,9 +4,11 @@ import '../services/airplane_service.dart';
 import '../validators/airplane_validator.dart';
 import '../widgets/custom_snackbar.dart';
 
+/// A view for adding a new airplane.
 class AirplaneAddView extends StatefulWidget {
   final AirplaneService airplaneService;
 
+  /// Constructor for AirplaneAddView, requires an instance of AirplaneService.
   AirplaneAddView({required this.airplaneService});
 
   @override
@@ -29,6 +31,7 @@ class _AirplaneAddViewState extends State<AirplaneAddView> {
     super.dispose();
   }
 
+  /// Saves the new airplane to the database if the form is valid.
   void _saveAirplane() async {
     if (_formKey.currentState!.validate()) {
       final airplane = Airplane(
@@ -46,8 +49,6 @@ class _AirplaneAddViewState extends State<AirplaneAddView> {
       CustomSnackbar.show(context, 'Please correct the errors and try again.');
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {

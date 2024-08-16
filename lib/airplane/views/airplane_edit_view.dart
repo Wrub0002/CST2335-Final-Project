@@ -4,11 +4,13 @@ import '../services/airplane_service.dart';
 import '../validators/airplane_validator.dart';
 import '../widgets/custom_snackbar.dart';
 
+/// A view for editing an existing airplane's details.
 class AirplaneEditView extends StatefulWidget {
   final Airplane airplane;
   final AirplaneService airplaneService;
   final VoidCallback onAirplaneUpdated;
 
+  /// Constructor for AirplaneEditView, requires an airplane object, airplane service, and a callback.
   AirplaneEditView({
     required this.airplane,
     required this.airplaneService,
@@ -44,6 +46,7 @@ class _AirplaneEditViewState extends State<AirplaneEditView> {
     super.dispose();
   }
 
+  /// Updates the airplane details in the database if the form is valid.
   void _updateAirplane() async {
     if (_formKey.currentState!.validate()) {
       final updatedAirplane = Airplane(
@@ -55,8 +58,8 @@ class _AirplaneEditViewState extends State<AirplaneEditView> {
       );
       await widget.airplaneService.updateAirplane(updatedAirplane);
       CustomSnackbar.show(context, 'Airplane updated successfully.');
-      widget.onAirplaneUpdated();  // Refresh the list
-      Navigator.of(context).pop();  // Go back to the list
+      widget.onAirplaneUpdated();
+      Navigator.of(context).pop();
     }
   }
 

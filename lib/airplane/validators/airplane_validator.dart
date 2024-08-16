@@ -1,4 +1,7 @@
+/// Validator class for validating airplane input fields.
 class AirplaneValidator {
+
+  /// Validates the airplane type.
   static String? validateType(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter the airplane type.';
@@ -9,6 +12,7 @@ class AirplaneValidator {
     return null;
   }
 
+  /// Validates the number of passengers.
   static String? validatePassengers(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter the number of passengers.';
@@ -20,6 +24,7 @@ class AirplaneValidator {
     return null;
   }
 
+  /// Validates the maximum speed.
   static String? validateSpeed(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter the maximum speed.';
@@ -31,6 +36,7 @@ class AirplaneValidator {
     return null;
   }
 
+  /// Validates the range.
   static String? validateRange(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter the range.';

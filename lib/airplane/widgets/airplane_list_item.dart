@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../models/airplane.dart';
 
+/// A widget representing a single airplane item in a list.
 class AirplaneListItem extends StatelessWidget {
   final Airplane airplane;
   final VoidCallback onTap;
   final VoidCallback onDelete;
 
+  /// Constructor for AirplaneListItem, requires an airplane, a tap callback, and a delete callback.
   const AirplaneListItem({
     Key? key,
     required this.airplane,
